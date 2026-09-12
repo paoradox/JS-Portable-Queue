@@ -24,7 +24,6 @@
     var unsubscribeQueue = null;
     var storageReconcileTimer = null;
     var stopClock = null;
-    var loginModalInstance = null;
     var el = {};
 
     function $(id) { return document.getElementById(id); }
@@ -38,12 +37,11 @@
         el.firstRunError       = $('firstRunError');
         el.firstRunSubmit      = $('firstRunSubmit');
 
-        el.loginModal          = $('loginModal');
-        el.loginCloseX         = $('loginCloseX');
-        el.loginUsername       = $('username');
-        el.loginPassword       = $('password');
-        el.loginError          = $('loginError');
-        el.loginSubmit         = $('loginSubmit');
+        el.loginGateForm       = $('loginGateForm');
+        el.gateUsername        = $('gateUsername');
+        el.gatePassword        = $('gatePassword');
+        el.gateLoginError      = $('gateLoginError');
+        el.gateLoginSubmit     = $('gateLoginSubmit');
 
         el.activeUser          = $('activeUser');
         el.logoutBtn           = $('logoutBtn');
@@ -64,18 +62,6 @@
         el.dashSpeakBtn        = $('dashSpeakBtn');
     }
 
-    function ensureModal(element) {
-        var M = window.bootstrap.Modal;
-        if (typeof M.getOrCreateInstance === 'function') {
-            return M.getOrCreateInstance(element);
-        }
-        if (typeof M.getInstance === 'function') {
-            var existing = M.getInstance(element);
-            if (existing) { return existing; }
-        }
-        return new M(element);
-    }
-
     function showError(element, message) { element.textContent = message || ''; }
     function clearError(element) { element.textContent = ''; }
 
@@ -89,11 +75,19 @@
     }
 
     // ---------------------------------------------------------------
-    // Auth gate: first-run only
+    // Auth gate: "Set up admin" (no accounts) or "Login" (accounts
+    // exist, no session). Only one card is ever visible at a time.
     // ---------------------------------------------------------------
 
     function showFirstRunForm() {
+        el.loginGateForm.classList.add('d-none');
         el.firstRunForm.classList.remove('d-none');
+        el.authGate.classList.remove('d-none');
+    }
+
+    function showLoginGate() {
+        el.firstRunForm.classList.add('d-none');
+        el.loginGateForm.classList.remove('d-none');
         el.authGate.classList.remove('d-none');
     }
 
@@ -133,51 +127,31 @@
     }
 
     // ---------------------------------------------------------------
-    // Login modal
+    // Login (full-page gate, not a modal)
     // ---------------------------------------------------------------
 
-    function openLoginModal() {
-        if (!window.bootstrap || !window.bootstrap.Modal) {
-            console.error('encoder.js: Bootstrap JS is not loaded.');
-            return;
-        }
-        if (!loginModalInstance) {
-            loginModalInstance = ensureModal(el.loginModal);
-        }
-        el.loginError.textContent = '';
-        loginModalInstance.show();
-        window.setTimeout(function () {
-            if (el.loginUsername) { el.loginUsername.focus(); }
-        }, 200);
-    }
-
-    function closeLoginModal(e) {
-        if (e) { e.preventDefault(); }
-        if (loginModalInstance) { loginModalInstance.hide(); }
-    }
-
     function handleLoginSubmit() {
-        clearError(el.loginError);
+        clearError(el.gateLoginError);
 
-        var username = el.loginUsername.value.trim();
-        var password = el.loginPassword.value;
+        var username = el.gateUsername.value.trim();
+        var password = el.gatePassword.value;
 
         if (!username || !password) {
-            showError(el.loginError, 'Enter both username and password.');
+            showError(el.gateLoginError, 'Enter both username and password.');
             return;
         }
 
-        el.loginSubmit.disabled = true;
+        el.gateLoginSubmit.disabled = true;
 
         window.JSQ_Auth.login(username, password).then(function () {
-            el.loginSubmit.disabled = false;
-            el.loginPassword.value = '';
-            closeLoginModal();
+            el.gateLoginSubmit.disabled = false;
+            el.gatePassword.value = '';
+            hideAuthGate();
             renderAuthButton();
             beginSession();
         }).catch(function (err) {
-            el.loginSubmit.disabled = false;
-            showError(el.loginError, err.message || 'Login failed.');
+            el.gateLoginSubmit.disabled = false;
+            showError(el.gateLoginError, err.message || 'Login failed.');
         });
     }
 
@@ -194,7 +168,7 @@
         session = window.JSQ_Auth.getSession();
         if (!session) {
             renderAuthButton();
-            openLoginModal();
+            showLoginGate();
             return;
         }
 
@@ -411,7 +385,7 @@
         if (e) { e.preventDefault(); }
 
         if (!window.JSQ_Auth.isLoggedIn()) {
-            openLoginModal();
+            showLoginGate();
             return;
         }
         endSession();
@@ -423,39 +397,27 @@
 
     function wireEvents() {
         el.firstRunSubmit.addEventListener('click', handleFirstRunSubmit);
-
-        el.loginCloseX.addEventListener('click', closeLoginModal);
-        el.loginSubmit.addEventListener('click', handleLoginSubmit);
-        el.loginPassword.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                handleLoginSubmit();
-            }
-        });
-        el.loginModal.addEventListener('show.bs.modal', function () {
-            document.body.classList.add('login-open');
-        });
-        el.loginModal.addEventListener('hidden.bs.modal', function () {
-            document.body.classList.remove('login-open');
-            el.loginError.textContent = '';
-            el.loginPassword.value = '';
-            // Session state may have changed while the modal was open.
-            renderAuthButton();
-        });
-
-        el.activeUser.addEventListener('click', function (e) {
-            e.preventDefault();
-            if (!window.JSQ_Auth.isLoggedIn()) { openLoginModal(); }
-        });
-
-        el.logoutBtn.addEventListener('click', handleAuthButtonClick);
-
         el.firstRunPasswordCfm.addEventListener('keydown', function (e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 handleFirstRunSubmit();
             }
         });
+
+        el.gateLoginSubmit.addEventListener('click', handleLoginSubmit);
+        el.gatePassword.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleLoginSubmit();
+            }
+        });
+
+        el.activeUser.addEventListener('click', function (e) {
+            e.preventDefault();
+            if (!window.JSQ_Auth.isLoggedIn()) { showLoginGate(); }
+        });
+
+        el.logoutBtn.addEventListener('click', handleAuthButtonClick);
 
         el.counterPickerSelect.addEventListener('change', handleCounterPick);
 
@@ -501,7 +463,7 @@
         renderAuthButton();
 
         if (!window.JSQ_Auth.isLoggedIn()) {
-            openLoginModal();
+            showLoginGate();
             return;
         }
 

@@ -13,7 +13,6 @@
     var editTargetUserId = null;
     var resetTargetUserId = null;
     var passwordConfirmCallback = null;
-    var loginModalInstance = null;
     var stopClock = null;
     var sessionReconcileTimer = null;
 
@@ -25,12 +24,19 @@
         el.noAccessGate        = $('noAccessGate');
         el.datetime            = $('datetime');
 
-        el.loginModal          = $('loginModal');
-        el.loginCloseX         = $('loginCloseX');
-        el.loginUsername       = $('username');
-        el.loginPassword       = $('password');
-        el.loginError          = $('loginError');
-        el.loginSubmit         = $('loginSubmit');
+        el.authGate             = $('authGate');
+        el.firstRunForm         = $('firstRunForm');
+        el.firstRunUsername     = $('firstRunUsername');
+        el.firstRunPassword     = $('firstRunPassword');
+        el.firstRunPasswordCfm  = $('firstRunPasswordConfirm');
+        el.firstRunError        = $('firstRunError');
+        el.firstRunSubmit       = $('firstRunSubmit');
+
+        el.loginGateForm        = $('loginGateForm');
+        el.gateUsername          = $('gateUsername');
+        el.gatePassword          = $('gatePassword');
+        el.gateLoginError        = $('gateLoginError');
+        el.gateLoginSubmit       = $('gateLoginSubmit');
 
         el.usersTableBody      = $('usersTableBody');
         el.usersError          = $('usersError');
@@ -146,53 +152,87 @@
         el.logoutBtn.textContent = window.JSQ_Auth.isLoggedIn() ? 'Logout' : 'Login';
     }
 
+    function showError(element, message) { element.textContent = message || ''; }
+    function clearError(element) { element.textContent = ''; }
+
     // ---------------------------------------------------------------
-    // Login modal
+    // Auth gate: "Set up admin" (no accounts) or "Login" (accounts
+    // exist, no session). Only one card is ever visible at a time.
     // ---------------------------------------------------------------
 
-    function openLoginModal() {
-        if (!window.bootstrap || !window.bootstrap.Modal) {
-            console.error('admin.js: Bootstrap JS is not loaded.');
-            window.location.href = 'encoder.html';
-            return;
-        }
-        if (!loginModalInstance) {
-            loginModalInstance = ensureModal(el.loginModal);
-        }
-        el.loginError.textContent = '';
-        loginModalInstance.show();
-        window.setTimeout(function () {
-            if (el.loginUsername) { el.loginUsername.focus(); }
-        }, 200);
+    function showFirstRunForm() {
+        el.loginGateForm.classList.add('d-none');
+        el.firstRunForm.classList.remove('d-none');
+        el.authGate.classList.remove('d-none');
     }
 
-    function closeLoginModal(e) {
-        if (e) { e.preventDefault(); }
-        if (loginModalInstance) { loginModalInstance.hide(); }
+    function showLoginGate() {
+        el.firstRunForm.classList.add('d-none');
+        el.loginGateForm.classList.remove('d-none');
+        el.authGate.classList.remove('d-none');
     }
 
-    function handleLoginSubmit() {
-        el.loginError.textContent = '';
+    function hideAuthGate() {
+        el.authGate.classList.add('d-none');
+    }
 
-        var username = el.loginUsername.value.trim();
-        var password = el.loginPassword.value;
+    function handleFirstRunSubmit() {
+        clearError(el.firstRunError);
 
-        if (!username || !password) {
-            el.loginError.textContent = 'Enter both username and password.';
+        var username = el.firstRunUsername.value.trim();
+        var password = el.firstRunPassword.value;
+        var confirm  = el.firstRunPasswordCfm.value;
+
+        if (password !== confirm) {
+            showError(el.firstRunError, 'Passwords do not match.');
             return;
         }
 
-        el.loginSubmit.disabled = true;
+        el.firstRunSubmit.disabled = true;
 
-        window.JSQ_Auth.login(username, password).then(function () {
-            el.loginSubmit.disabled = false;
-            el.loginPassword.value = '';
-            closeLoginModal();
+        window.JSQ_Auth.createUser({
+            username: username,
+            password: password,
+            isAdmin: true
+        }).then(function () {
+            return window.JSQ_Auth.login(username, password);
+        }).then(function () {
+            el.firstRunSubmit.disabled = false;
+            hideAuthGate();
             renderAuthButton();
             boot();
         }).catch(function (err) {
-            el.loginSubmit.disabled = false;
-            el.loginError.textContent = err.message || 'Login failed.';
+            el.firstRunSubmit.disabled = false;
+            showError(el.firstRunError, err.message || 'Could not create account.');
+        });
+    }
+
+    // ---------------------------------------------------------------
+    // Login (full-page gate, not a modal)
+    // ---------------------------------------------------------------
+
+    function handleLoginSubmit() {
+        clearError(el.gateLoginError);
+
+        var username = el.gateUsername.value.trim();
+        var password = el.gatePassword.value;
+
+        if (!username || !password) {
+            showError(el.gateLoginError, 'Enter both username and password.');
+            return;
+        }
+
+        el.gateLoginSubmit.disabled = true;
+
+        window.JSQ_Auth.login(username, password).then(function () {
+            el.gateLoginSubmit.disabled = false;
+            el.gatePassword.value = '';
+            hideAuthGate();
+            renderAuthButton();
+            boot();
+        }).catch(function (err) {
+            el.gateLoginSubmit.disabled = false;
+            showError(el.gateLoginError, err.message || 'Login failed.');
         });
     }
 
@@ -204,7 +244,7 @@
         if (e) { e.preventDefault(); }
 
         if (!window.JSQ_Auth.isLoggedIn()) {
-            openLoginModal();
+            showLoginGate();
             return;
         }
 
@@ -815,23 +855,20 @@
 
         el.logoutBtn.addEventListener('click', handleAuthButtonClick);
 
-        el.loginCloseX.addEventListener('click', closeLoginModal);
-        el.loginSubmit.addEventListener('click', handleLoginSubmit);
-        el.loginPassword.addEventListener('keydown', function (e) {
+        el.firstRunSubmit.addEventListener('click', handleFirstRunSubmit);
+        el.firstRunPasswordCfm.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleFirstRunSubmit();
+            }
+        });
+
+        el.gateLoginSubmit.addEventListener('click', handleLoginSubmit);
+        el.gatePassword.addEventListener('keydown', function (e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 handleLoginSubmit();
             }
-        });
-        el.loginModal.addEventListener('show.bs.modal', function () {
-            document.body.classList.add('login-open');
-        });
-        el.loginModal.addEventListener('hidden.bs.modal', function () {
-            document.body.classList.remove('login-open');
-            el.loginError.textContent = '';
-            el.loginPassword.value = '';
-            // Session state may have changed while the modal was open.
-            renderAuthButton();
         });
 
         el.usersTableBody.addEventListener('click', handleUsersTableClick);
@@ -895,14 +932,22 @@
         cacheElements();
         wireEvents();
 
-        session = window.JSQ_Auth.getSession();
-
         renderAuthButton();
 
-        if (!session) {
-            openLoginModal();
+        if (!window.JSQ_Auth.hasAnyUser()) {
+            showFirstRunForm();
             return;
         }
+
+        session = window.JSQ_Auth.getSession();
+
+        if (!session) {
+            showLoginGate();
+            return;
+        }
+
+        hideAuthGate();
+
         if (!session.isAdmin) {
             el.noAccessGate.classList.remove('d-none');
             return;

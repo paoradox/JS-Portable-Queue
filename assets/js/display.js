@@ -1,15 +1,15 @@
 /*
- * display.js � Public display board controller
+ * display.js — Public display board controller
  *
- * Depends on: auth.js, queue.js, ui.js, bootstrap.js.
+ * Depends on: queue.js, ui.js.
+ * No login/auth capability on this page — it's the public "now
+ * serving" board. Staff access encoder.html / admin.html directly.
  */
 (function (window, document) {
     'use strict';
 
     var stopClock = null;
     var unsubscribeQueue = null;
-    var loginModal = null;
-    var el = {};
 
     var dingCtx = null;
     var lastDingAt = 0;
@@ -18,33 +18,10 @@
     function $(id) { return document.getElementById(id); }
 
     function cacheElements() {
-        el.datetime      = $('datetime');
-        el.loginLink     = $('loginLink');
-        el.loginModal    = $('loginModal');
-        el.loginForm     = $('loginForm');
-        el.loginUsername = $('username');
-        el.loginPassword = $('password');
-        el.loginError    = $('loginError');
-        el.loginSubmit   = $('loginSubmit');
-        el.loginCloseX   = $('loginCloseX');
+        el.datetime = $('datetime');
     }
 
-    function ensureModal(element) {
-        var M = window.bootstrap.Modal;
-        if (typeof M.getOrCreateInstance === 'function') {
-            return M.getOrCreateInstance(element);
-        }
-        if (typeof M.getInstance === 'function') {
-            var existing = M.getInstance(element);
-            if (existing) { return existing; }
-        }
-        return new M(element);
-    }
-
-    function closeLoginModal(e) {
-        if (e) { e.preventDefault(); }
-        if (loginModal) { loginModal.hide(); }
-    }
+    var el = {};
 
     // ---------------------------------------------------------------
     // Sound cue
@@ -134,109 +111,11 @@
     }
 
     // ---------------------------------------------------------------
-    // Login modal / routing
-    // ---------------------------------------------------------------
-
-    function openLoginModal() {
-        if (typeof window.bootstrap === 'undefined' ||
-            !window.bootstrap.Modal) {
-            console.error('display.js: Bootstrap JS is not loaded. Redirecting to encoder.html.');
-            window.location.href = 'encoder.html';
-            return;
-        }
-
-        if (!loginModal) {
-            loginModal = ensureModal(el.loginModal);
-        }
-        el.loginError.textContent = '';
-        loginModal.show();
-        window.setTimeout(function () {
-            el.loginUsername.focus();
-        }, 200);
-    }
-
-    function handleLoginLinkClick(e) {
-        e.preventDefault();
-
-        if (!window.JSQ_Auth) {
-            console.error('display.js: JSQ_Auth is not loaded.');
-            return;
-        }
-
-        if (!window.JSQ_Auth.hasAnyUser()) {
-            window.location.href = 'encoder.html';
-            return;
-        }
-        if (window.JSQ_Auth.isLoggedIn()) {
-            window.location.href = 'encoder.html';
-            return;
-        }
-        openLoginModal();
-    }
-
-    function handleLoginSubmit() {
-        el.loginError.textContent = '';
-
-        var username = el.loginUsername.value.trim();
-        var password = el.loginPassword.value;
-
-        if (!username || !password) {
-            el.loginError.textContent = 'Enter both username and password.';
-            return;
-        }
-
-        el.loginSubmit.disabled = true;
-
-        window.JSQ_Auth.login(username, password).then(function () {
-            el.loginSubmit.disabled = false;
-            window.location.href = 'encoder.html';
-        }).catch(function (err) {
-            el.loginSubmit.disabled = false;
-            el.loginError.textContent = err.message || 'Login failed.';
-        });
-    }
-
-    // ---------------------------------------------------------------
-    // Event wiring
-    // ---------------------------------------------------------------
-
-    function wireEvents() {
-        el.loginLink.addEventListener('click', handleLoginLinkClick);
-        el.loginSubmit.addEventListener('click', handleLoginSubmit);
-
-        if (el.loginCloseX) { el.loginCloseX.addEventListener('click', closeLoginModal); }
-
-        el.loginPassword.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                handleLoginSubmit();
-            }
-        });
-
-        el.loginModal.addEventListener('show.bs.modal', function () {
-            document.body.classList.add('login-open');
-        });
-        el.loginModal.addEventListener('hidden.bs.modal', function () {
-            document.body.classList.remove('login-open');
-            el.loginError.textContent = '';
-            el.loginPassword.value = '';
-        });
-
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape' && el.loginModal &&
-                el.loginModal.classList.contains('show')) {
-                closeLoginModal();
-            }
-        });
-    }
-
-    // ---------------------------------------------------------------
     // Boot
     // ---------------------------------------------------------------
 
     function boot() {
         cacheElements();
-        wireEvents();
         window.JSQ_UI.wireSidebar();
         installAudioUnlock();
 
