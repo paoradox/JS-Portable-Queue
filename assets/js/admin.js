@@ -723,6 +723,11 @@
                String(d.getDate()).padStart(2, '0');
     }
 
+    function fileMonthStamp() {
+        var d = new Date();
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    }
+
     function handleExportLog() {
         var log = window.JSQ_Queue.getLog();
         if (log.length === 0) {
@@ -750,21 +755,21 @@
 
     function handleExportReport() {
         var log = window.JSQ_Queue.getLog();
-        var today = new Date();
+        var now = new Date();
+        var targetYear = now.getFullYear();
+        var targetMonth = now.getMonth();
 
-        var isToday = function (iso) {
+        var isThisMonth = function (iso) {
             var d = new Date(iso);
-            return d.getFullYear() === today.getFullYear() &&
-                   d.getMonth() === today.getMonth() &&
-                   d.getDate() === today.getDate();
+            return d.getFullYear() === targetYear && d.getMonth() === targetMonth;
         };
 
         var issued = log.filter(function (e) {
-            return e.action === 'issue' && isToday(e.ts);
+            return e.action === 'issue' && isThisMonth(e.ts);
         }).reverse();
 
         if (issued.length === 0) {
-            window.alert('No tickets have been issued today.');
+            window.alert('No tickets have been issued this month.');
             return;
         }
 
@@ -790,7 +795,7 @@
         });
 
         var rows = [];
-        rows.push(csvRow(['Daily Queue Report', fileDateStamp()]));
+        rows.push(csvRow(['Monthly Queue Report', fileMonthStamp()]));
         rows.push('');
         rows.push(csvRow([
             'Counter', 'Tickets Issued',
@@ -810,9 +815,9 @@
         });
 
         rows.push('');
-        rows.push(csvRow(['Total tickets issued today', issued.length]));
+        rows.push(csvRow(['Total tickets issued this month', issued.length]));
 
-        downloadCsv('daily-report-' + fileDateStamp() + '.csv', rows.join(''));
+        downloadCsv('monthly-report-' + fileMonthStamp() + '.csv', rows.join(''));
     }
 
     // ---------------------------------------------------------------

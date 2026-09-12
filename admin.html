@@ -59,6 +59,12 @@
       .auth-card h3 {
         margin-bottom: 20px;
       }
+      #firstRunForm .form-control {
+        text-align: center;
+      }
+      #firstRunForm .form-control::placeholder {
+        text-align: center;
+      }
       #loginGateForm .form-control {
         text-align: center;
       }
@@ -131,7 +137,6 @@
       }
     </style>
   </head>
-  
   <body>
     <div class="wrapper">
       <nav id="sidebar">
@@ -164,7 +169,7 @@
               type="text"
               id="firstRunUsername"
               class="form-control"
-              value="admin"
+              placeholder="Username"
               autocomplete="username"
             />
           </div>
@@ -174,6 +179,7 @@
               type="password"
               id="firstRunPassword"
               class="form-control"
+              placeholder="Password"
               autocomplete="new-password"
             />
           </div>
@@ -185,6 +191,7 @@
               type="password"
               id="firstRunPasswordConfirm"
               class="form-control"
+              placeholder="Confirm password"
               autocomplete="new-password"
             />
           </div>
@@ -626,7 +633,7 @@
                   class="btn btn-outline-primary w-100"
                   id="exportReportBtn"
                 >
-                  <i class="fas fa-file-csv"></i> Export today's report (CSV)
+                  <i class="fas fa-file-csv"></i> Export monthly report (CSV)
                 </button>
               </div>
               <div class="col-12 col-md-4">
@@ -656,7 +663,6 @@
         </section>
       </div>
     </div>
-
     <script type="text/javascript" src="assets/jq/jquery-3.5.1.js"></script>
     <script type="text/javascript" src="assets/js/bootstrap.js"></script>
     <script src="assets/jq/jquery.mCustomScrollbar.concat.min.js"></script>
