@@ -595,7 +595,7 @@
         el.resetError.textContent = '';
         openPasswordConfirm({
             title: 'Reset ' + label,
-            message: 'Clear all counters in this pool and restart numbering at 1?',
+            message: 'Clear all counters in this pool and restart numbering?',
             confirmLabel: 'Reset',
             onConfirm: function () {
                 try {
@@ -612,7 +612,7 @@
         el.resetError.textContent = '';
         openPasswordConfirm({
             title: 'Reset all counters',
-            message: 'Clear every counter (C1–C6, PWD, ESCAL) and restart numbering at 1?',
+            message: 'Clear every counter (C1–C6, PWD, ESCAL) and restart numbering?',
             confirmLabel: 'Reset all',
             onConfirm: function () {
                 try {
