@@ -301,9 +301,13 @@
     // Password confirmation modal
     // ---------------------------------------------------------------
 
+    // opts.danger: true renders the message in warning red instead of
+    // the default muted gray. Used for destructive queue resets.
     function openPasswordConfirm(opts) {
         el.passwordConfirmModalLabel.textContent = opts.title || 'Confirm';
         el.passwordConfirmMessage.textContent = opts.message || '';
+        el.passwordConfirmMessage.classList.toggle('text-danger', !!opts.danger);
+        el.passwordConfirmMessage.classList.toggle('text-muted', !opts.danger);
         el.passwordConfirmSubmit.textContent = opts.confirmLabel || 'Confirm';
         el.passwordConfirmInput.value = '';
         el.passwordConfirmError.textContent = '';
@@ -597,6 +601,7 @@
             title: 'Reset ' + label,
             message: 'Clear all counters in this pool and restart numbering?',
             confirmLabel: 'Reset',
+            danger: true,
             onConfirm: function () {
                 try {
                     window.JSQ_Queue.resetPool(poolName, currentActor());
@@ -614,6 +619,7 @@
             title: 'Reset all counters',
             message: 'Clear every counter (C1–C6, PWD, ESCAL) and restart numbering?',
             confirmLabel: 'Reset all',
+            danger: true,
             onConfirm: function () {
                 try {
                     window.JSQ_Queue.resetAll(currentActor());
