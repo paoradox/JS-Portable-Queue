@@ -1,5 +1,5 @@
 /*
- * display.js — Public display board controller
+ * display.js ï¿½ Public display board controller
  *
  * Depends on: auth.js, queue.js, ui.js, bootstrap.js.
  */

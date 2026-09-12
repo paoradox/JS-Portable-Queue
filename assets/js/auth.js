@@ -1,5 +1,5 @@
 /*
- * auth.js — Queue system authentication module
+ * auth.js ï¿½ Queue system authentication module
  *
  * Public API: window.JSQ_Auth
  */
@@ -60,7 +60,7 @@
         if (!window.crypto || !window.crypto.subtle) {
             throw new Error(
                 'JSQ_Auth: Web Crypto API is unavailable. Serve this app ' +
-                'over http://localhost or https:// — not file://.'
+                'over http://localhost or https:// ï¿½ not file://.'
             );
         }
         var buf = new TextEncoder().encode(input);
@@ -122,7 +122,7 @@
 
     // Includes `userId` as an alias of `id` for backward compatibility.
     // `counterChangedAt` is a timestamp bumped every time the counter
-    // assignment changes — used by encoder.js to detect admin resets.
+    // assignment changes ï¿½ used by encoder.js to detect admin resets.
     function publicView(user) {
         return {
             id: user.id,

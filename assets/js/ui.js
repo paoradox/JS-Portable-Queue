@@ -1,5 +1,5 @@
 /*
- * ui.js — Shared UI helpers
+ * ui.js ï¿½ Shared UI helpers
  *
  * Small, page-agnostic behaviours that every page controller needs:
  *   - Sidebar toggle + custom scrollbar
@@ -23,7 +23,7 @@
     // Formatters
     // ---------------------------------------------------------------
 
-    // "Thu, Sep 11 · 3:18:12 PM"
+    // "Thu, Sep 11 ï¿½ 3:18:12 PM"
     function formatDate(d) {
         var h = d.getHours();
         var ampm = h >= 12 ? 'PM' : 'AM';
@@ -42,7 +42,7 @@
         return formatDate(new Date());
     }
 
-    // Same format, for a past/absolute ISO timestamp. Returns "—"
+    // Same format, for a past/absolute ISO timestamp. Returns "ï¿½"
     // for null/undefined so table cells render consistently.
     function formatAbsolute(iso) {
         if (!iso) { return '\u2014'; }
@@ -55,7 +55,7 @@
 
     // Wires the sidebar toggle and (optionally) the custom scrollbar.
     // The scrollbar plugin is jQuery-based; if jQuery or the plugin
-    // is missing, the sidebar still works — just without the styled rail.
+    // is missing, the sidebar still works ï¿½ just without the styled rail.
     function wireSidebar() {
         var sidebar = document.getElementById('sidebar');
         var content = document.getElementById('content');
