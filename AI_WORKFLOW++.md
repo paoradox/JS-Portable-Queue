@@ -7,21 +7,21 @@ Single-file AI operating spec combining consistent coding behavior, on-demand RE
 
 | Field | Value |
 |---|---|
-| Project Name | `[PROJECT_NAME]` |
-| Repository Type | `[Application \| API \| Library \| CLI \| Script \| Plugin \| Template]` |
-| Language(s) | `[LANGUAGE]` |
-| Framework(s) | `[FRAMEWORK]` |
-| Database | `[DATABASE]` |
-| Package Manager | `[PACKAGE_MANAGER]` |
-| Testing Framework | `[TEST_FRAMEWORK]` |
-| License | `[LICENSE]` |
-| Repository URL | `[REPOSITORY_URL]` |
-| Documentation URL | `[DOCUMENTATION_URL]` |
-| Demo URL | `[DEMO_URL]` |
-| Experience Level | `[Beginner \| Intermediate \| Advanced]` |
-| Explanation Level | `[Minimal \| Balanced \| Detailed]` |
-| Change Policy | `[Preview First \| Ask for Major Changes \| Direct Implementation]` |
-| Comment Style | `[Minimal \| Block Comments \| Detailed]` |
+| Project Name | `[JS-Portable-Queue]` |
+| Repository Type | `[Application]` |
+| Language(s) | `[HTML, CSS, JAVASCRIPT]` |
+| Framework(s) | `[BOOTSTRAP 4]` |
+| Database | `[LOCAL STORAGE]` |
+| Package Manager | `[NONE]` |
+| Testing Framework | `[NONE]` |
+| License | `[NONE]` |
+| Repository URL | `[https://github.com/paoradox/JS-Portable-Queue]` |
+| Documentation URL | `[NONE]` |
+| Demo URL | `[NONE]` |
+| Experience Level | `[Beginner]` |
+| Explanation Level | `[Detailed]` |
+| Change Policy | `[Ask for Major Changes]` |
+| Comment Style | `[Detailed]` |
 
 ## Configuration Validation
 Before proceeding, verify that all required Project Settings and Operating Preferences have valid values.
