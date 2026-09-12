@@ -1,10 +1,11 @@
 /*
- * ui.js � Shared UI helpers
+ * ui.js — Shared UI helpers
  *
  * Small, page-agnostic behaviours that every page controller needs:
  *   - Sidebar toggle + custom scrollbar
  *   - Fixed-format datetime clock for navbar badges
  *   - Fixed-format absolute timestamp formatter (for log tables)
+ *   - Public queue board renderer (updates [data-counter-id] elements)
  *
  * Public API: window.JSQ_UI
  *
@@ -23,7 +24,7 @@
     // Formatters
     // ---------------------------------------------------------------
 
-    // "Thu, Sep 11 � 3:18:12 PM"
+    // "Thu, Sep 11 · 3:18:12 PM"
     function formatDate(d) {
         var h = d.getHours();
         var ampm = h >= 12 ? 'PM' : 'AM';
@@ -42,7 +43,7 @@
         return formatDate(new Date());
     }
 
-    // Same format, for a past/absolute ISO timestamp. Returns "�"
+    // Same format, for a past/absolute ISO timestamp. Returns "—"
     // for null/undefined so table cells render consistently.
     function formatAbsolute(iso) {
         if (!iso) { return '\u2014'; }
@@ -55,7 +56,7 @@
 
     // Wires the sidebar toggle and (optionally) the custom scrollbar.
     // The scrollbar plugin is jQuery-based; if jQuery or the plugin
-    // is missing, the sidebar still works � just without the styled rail.
+    // is missing, the sidebar still works — just without the styled rail.
     function wireSidebar() {
         var sidebar = document.getElementById('sidebar');
         var content = document.getElementById('content');
@@ -98,6 +99,27 @@
     }
 
     // ---------------------------------------------------------------
+    // Public queue board
+    // ---------------------------------------------------------------
+
+    // Updates every [data-counter-id] element on the page (used by
+    // both index.html's public board and encoder.html's queue list)
+    // with the current "now serving" value from JSQ_Queue.
+    // Safe to call on any page: elements that don't exist are skipped,
+    // and it no-ops entirely if JSQ_Queue isn't loaded yet.
+    function renderBoard() {
+        if (!window.JSQ_Queue || typeof window.JSQ_Queue.getAllCounters !== 'function') {
+            return;
+        }
+
+        var counters = window.JSQ_Queue.getAllCounters();
+        counters.forEach(function (counter) {
+            var el = document.querySelector('[data-counter-id="' + counter.id + '"]');
+            if (el) { el.textContent = counter.display; }
+        });
+    }
+
+    // ---------------------------------------------------------------
     // Export
     // ---------------------------------------------------------------
 
@@ -105,7 +127,8 @@
         formatNow: formatNow,
         formatAbsolute: formatAbsolute,
         wireSidebar: wireSidebar,
-        startClock: startClock
+        startClock: startClock,
+        renderBoard: renderBoard
     };
 
 })(window, document);
