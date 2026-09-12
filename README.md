@@ -428,4 +428,4 @@ The following behaviors must remain intact:
 
 ## License
 
-This project is available for personal, educational, and development use. Add or update the license information according to the licensing terms of the repository.
+None specified.
