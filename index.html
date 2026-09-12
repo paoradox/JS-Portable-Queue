@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Queue Manager | Home</title>
+
+        <meta name="portable-queue" content="portable-queue">
+        <meta name="apple-mobile-web-app-title" content="Queue Manager">
+        <meta name="theme-color" content="#134087">
+        <link rel="apple-touch-icon" href="assets/img/ico.png" sizes="180x180">
+        <link rel="icon" type="image/png" href="assets/img/ico.png" sizes="32x32">
+        <link rel="icon" type="image/png" href="assets/img/ico.png" sizes="16x16">
+        <link rel="mask-icon" href="assets/img/ico.png">
+        <link rel="shortcut icon" href="assets/img/ico.png">
+
+        <link rel="stylesheet" href="assets/css/bootstrap.css">
+        <link rel="stylesheet" href="assets/css/sidebar.css">
+        <link rel="stylesheet" href="assets/css/jquery.mCustomScrollbar.min.css">
+        <script src="assets/js/solid.js"></script>
+        <script src="assets/js/fontawesome.js"></script>
+
+        <style>
+            #loginModal .form-control { text-align: center; }
+            #loginModal .form-control::placeholder { text-align: center; }
+
+            .modal-x {
+                background: transparent;
+                border: 0;
+                font-size: 1.75rem;
+                line-height: 1;
+                color: #000;
+                opacity: 0.5;
+                padding: 0 0.25rem;
+                cursor: pointer;
+                margin-left: auto;
+            }
+            .modal-x:hover { opacity: 0.75; }
+
+            body.login-open #sidebar,
+            body.login-open #content {
+                visibility: hidden;
+            }
+            body.login-open > .modal-backdrop {
+                background-color: #fff;
+                opacity: 1;
+            }
+        </style>
+    </head>
+<body>
+<div class="wrapper">
+    <nav id="sidebar">
+        <div class="sidebar-header">
+            <h3>Queue Manager BETA</h3>
+        </div>
+        <ul class="list-unstyled components">
+            <li>
+                <a href="#queue">Queue</a>
+            </li>
+            <li>
+                <a href="#commercial">Commercial</a>
+            </li>
+        </ul>
+        <ul class="list-unstyled CTAs">
+            <li>
+                <a>Queue Display</a>
+            </li>
+            <li>
+                <a href="#" id="loginLink" class="logout">Login</a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="modal fade" id="loginModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Login</h5>
+                    <button type="button" class="modal-x" id="loginCloseX" data-bs-dismiss="modal" aria-label="Close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div id="loginForm">
+                        <div class="row">
+                            <div class="col">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" id="username" name="username" class="form-control" placeholder="Username" autocomplete="username">
+                            </div>
+                            <div class="col">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" id="password" name="password" class="form-control" placeholder="Password" autocomplete="current-password">
+                            </div>
+                        </div>
+                        <div id="loginError" class="text-danger small mt-2"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary w-100" id="loginSubmit">Login</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<div id="content">
+    <nav class="navbar navbar-expand-lg bg-light">
+        <div class="container-fluid">
+            <button type="button" id="sidebarCollapse" class="btn btn-info">
+            <i class="fas fa-align-left"></i>
+            <span></span>
+            </button>
+                <ul class="nav navbar-nav ms-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#"><span id="datetime" class="badge rounded-pill text-bg-dark">Time Placeholder</span></a>
+                    </li>
+                </ul>
+        </div>
+    </nav>
+
+<section id="queue">
+  <div class="container">
+      <div class="row">
+            <div class="col-md-6">
+                <ul class="list-group">
+                    <li class="list-group-item">Station | Now serving</li>
+                    <li class="list-group-item active">C1: <span class="badge text-bg-light" data-counter-id="c1">—</span></li>
+                    <li class="list-group-item active">C2: <span class="badge text-bg-light" data-counter-id="c2">—</span></li>
+                    <li class="list-group-item active">C3: <span class="badge text-bg-light" data-counter-id="c3">—</span></li>
+                    <li class="list-group-item active">C4: <span class="badge text-bg-light" data-counter-id="c4">—</span></li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <ul class="list-group">
+                    <li class="list-group-item d-none d-md-block">Station | Now serving</li>
+                    <li class="list-group-item active">C5: <span class="badge text-bg-light" data-counter-id="c5">—</span></li>
+                    <li class="list-group-item active">C6: <span class="badge text-bg-light" data-counter-id="c6">—</span></li>
+                    <li class="list-group-item active">PWD: <span class="badge text-bg-light" data-counter-id="pwd">—</span></li>
+                    <li class="list-group-item active">ESCAL: <span class="badge text-bg-light" data-counter-id="escal">—</span></li>
+                </ul>
+            </div>   
+      </div>
+  </div>
+</section>
+
+<div class="line"></div>
+
+<section id="commercial">
+    <div class="container">
+        <div class="row">
+            <iframe width="800" height="480"
+                    src="https://www.youtube.com/embed/mF3n6my4L3w?autoplay=1&loop=1&mute=1"
+                    name="youtube embed"
+                    allow="autoplay; encrypted-media"
+                    allowfullscreen></iframe>
+        </div>
+    </div>
+</section>
+
+    </div>
+</div>
+
+        <script type="text/javascript" src="assets/jq/jquery-3.5.1.js"></script>
+        <script type="text/javascript" src="assets/js/bootstrap.js"></script>
+        <script src="assets/jq/jquery.mCustomScrollbar.concat.min.js"></script>
+        <script type="text/javascript" src="assets/js/auth.js"></script>
+        <script type="text/javascript" src="assets/js/queue.js"></script>
+        <script type="text/javascript" src="assets/js/ui.js"></script>
+        <script type="text/javascript" src="assets/js/display.js"></script>
+
+</body>
+</html>
