@@ -1,5 +1,5 @@
 /*
- * auth.js � Queue system authentication module
+ * auth.js — Queue system authentication module
  *
  * Public API: window.JSQ_Auth
  */
@@ -8,12 +8,20 @@
 
     var USERS_KEY   = 'jsq.users';
     var SESSION_KEY = 'jsq.session';
+    var ATTEMPTS_KEY = 'jsq.loginAttempts';
     var COUNTER_KEY_PREFIX = 'jsq.encoder.counter.';
 
     var MIN_USERNAME_LEN = 3;
     var MAX_USERNAME_LEN = 20;
     var MIN_PASSWORD_LEN = 6;
     var USERNAME_RE = /^[A-Za-z0-9_-]+$/;
+
+    // Login lockout: MAX_LOGIN_ATTEMPTS failures for the same username
+    // within a lockout window trigger a LOCKOUT_MS cooldown before that
+    // username can try again. This is a client-side speed bump only —
+    // anyone with DevTools access can clear jsq.loginAttempts directly.
+    var MAX_LOGIN_ATTEMPTS = 5;
+    var LOCKOUT_MS = 30000; // 30 seconds
 
     function readUsers() {
         var raw = window.localStorage.getItem(USERS_KEY);
@@ -46,6 +54,66 @@
         window.localStorage.removeItem(SESSION_KEY);
     }
 
+    // ---------------------------------------------------------------
+    // Login attempt tracking (lockout)
+    // ---------------------------------------------------------------
+
+    function readAttempts() {
+        var raw = window.localStorage.getItem(ATTEMPTS_KEY);
+        if (!raw) { return {}; }
+        try {
+            var parsed = JSON.parse(raw);
+            return (parsed && typeof parsed === 'object') ? parsed : {};
+        } catch (e) { return {}; }
+    }
+
+    function writeAttempts(map) {
+        window.localStorage.setItem(ATTEMPTS_KEY, JSON.stringify(map));
+    }
+
+    function attemptKey(username) {
+        return String(username || '').trim().toLowerCase();
+    }
+
+    // Returns milliseconds remaining on an active lockout for this
+    // username, or 0 if not locked (including expired lockouts).
+    function getLockoutRemainingMs(username) {
+        var map = readAttempts();
+        var record = map[attemptKey(username)];
+        if (!record || !record.lockedUntil) { return 0; }
+        var remaining = record.lockedUntil - Date.now();
+        return remaining > 0 ? remaining : 0;
+    }
+
+    function recordFailedAttempt(username) {
+        var key = attemptKey(username);
+        var map = readAttempts();
+        var record = map[key] || { count: 0, lockedUntil: null };
+
+        // A previous lockout that has already expired starts fresh.
+        if (record.lockedUntil && record.lockedUntil <= Date.now()) {
+            record = { count: 0, lockedUntil: null };
+        }
+
+        record.count += 1;
+        if (record.count >= MAX_LOGIN_ATTEMPTS) {
+            record.lockedUntil = Date.now() + LOCKOUT_MS;
+            record.count = 0;
+        }
+
+        map[key] = record;
+        writeAttempts(map);
+    }
+
+    function clearAttempts(username) {
+        var key = attemptKey(username);
+        var map = readAttempts();
+        if (map[key]) {
+            delete map[key];
+            writeAttempts(map);
+        }
+    }
+
     function randomSaltHex() {
         var bytes = new Uint8Array(16);
         window.crypto.getRandomValues(bytes);
@@ -60,7 +128,7 @@
         if (!window.crypto || !window.crypto.subtle) {
             throw new Error(
                 'JSQ_Auth: Web Crypto API is unavailable. Serve this app ' +
-                'over http://localhost or https:// � not file://.'
+                'over http://localhost or https:// — not file://.'
             );
         }
         var buf = new TextEncoder().encode(input);
@@ -122,7 +190,7 @@
 
     // Includes `userId` as an alias of `id` for backward compatibility.
     // `counterChangedAt` is a timestamp bumped every time the counter
-    // assignment changes � used by encoder.js to detect admin resets.
+    // assignment changes — used by encoder.js to detect admin resets.
     function publicView(user) {
         return {
             id: user.id,
@@ -184,14 +252,29 @@
             throw new Error('Invalid username or password.');
         }
 
+        var remainingMs = getLockoutRemainingMs(username);
+        if (remainingMs > 0) {
+            throw new Error(
+                'Too many failed attempts. Try again in ' +
+                Math.ceil(remainingMs / 1000) + 's.'
+            );
+        }
+
         var users = readUsers();
         var user = findUserByName(users, username);
-        if (!user) { throw new Error('Invalid username or password.'); }
+
+        if (!user) {
+            recordFailedAttempt(username);
+            throw new Error('Invalid username or password.');
+        }
 
         var candidate = await hashPassword(password, user.salt);
         if (candidate !== user.hash) {
+            recordFailedAttempt(username);
             throw new Error('Invalid username or password.');
         }
+
+        clearAttempts(username);
 
         writeRawSession({
             userId: user.id,
