@@ -53,9 +53,9 @@ The supported counters are:
 
 | Page | Purpose |
 | --- | --- |
-| `index.html` | Login and main application entry point |
-| `encoder.html` | Queue encoder and queue issuing screen |
-| `admin.html` | Administrative controls, users, counters, and queue management |
+| `index.html` | Main display |
+| `encoder.html` | Set-up login on first launch, queue encoder and queue issuing screen |
+| `admin.html` | Set-up login on first launch, administrative controls, users, counters, and queue management |
 
 When running the project through a VS Code Live Server or another local web server, open the appropriate page according to the role of the user.
 
