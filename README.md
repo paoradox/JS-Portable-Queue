@@ -428,4 +428,4 @@ The following behaviors must remain intact:
 
 ## License
 
-None specified.
+Apache License 2.0
