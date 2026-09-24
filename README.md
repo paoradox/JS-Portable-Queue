@@ -6,7 +6,7 @@ This project currently uses browser `localStorage` and browser storage events, m
 
 > **Important:** This version stores its application data in the browser's `localStorage`. This means that data is tied to the browser profile and device, even when the application is accessed through port forwarding. **Port forwarding does not make browser `localStorage` shared between users or devices.**
 
-> **What changed from the original:** everything under ["Migration Objective](#migration-objective) in this original README has been implemented to [JS-Portable-Queue-LAN](https://github.com/paoradox/JS-Portable-Queue-LAN).
+> **What changed from the original:** everything under ["Migration Objective"](#migration-objective) in this original README has been implemented to [JS-Portable-Queue-LAN](https://github.com/paoradox/JS-Portable-Queue-LAN).
 
 ## Features
 
